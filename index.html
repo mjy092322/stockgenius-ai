@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StockGenius AI - 革命性股票投资APP</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            overflow-x: hidden;
+        }
+
+        .presentation-container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+        }
+
+        .slide {
+            position: absolute;
+            width: 100%;
+            height: 100vh;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .slide.active {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .slide.prev {
+            transform: translateX(-100%);
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            text-align: center;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        h2 {
+            font-size: 2.5rem;
+            margin-bottom: 30px;
+            text-align: center;
+            color: #fff;
+        }
+
+        h3 {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            color: #ffd700;
+        }
+
+        .subtitle {
+            font-size: 1.3rem;
+            margin-bottom: 40px;
+            text-align: center;
+            opacity: 0.9;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transform: translateY(20px);
+            opacity: 0;
+            animation: slideUp 0.8s ease-out forwards;
+        }
+
+        .feature-card:nth-child(2) { animation-delay: 0.2s; }
+        .feature-card:nth-child(3) { animation-delay: 0.4s; }
+        .feature-card:nth-child(4) { animation-delay: 0.6s; }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            display: block;
+            text-align: center;
+        }
+
+        .app-mockup {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 40px;
+            flex-wrap: wrap;
+            max-width: 1000px;
+        }
+
+        .phone-mockup {
+            width: 280px;
+            height: 580px;
+            background: #000;
+            border-radius: 40px;
+            padding: 20px;
+            position: relative;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+
+        .screen {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            border-radius: 30px;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .screen-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            color: white;
+        }
+
+        .stock-card {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .stock-symbol {
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: #ffd700;
+        }
+
+        .stock-price {
+            color: #4caf50;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .ai-prediction {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            border-radius: 10px;
+            padding: 10px;
+            margin: 10px 0;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            z-index: 1000;
+        }
+
+        .nav-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+
+        .slide-indicator {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 1000;
+        }
+
+        .indicator-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .indicator-dot.active {
+            background: #ffd700;
+            transform: scale(1.3);
+        }
+
+        .tech-stack {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            margin: 30px 0;
+        }
+
+        .tech-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px 25px;
+            border-radius: 25px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .revenue-chart {
+            width: 100%;
+            max-width: 600px;
+            height: 300px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 20px;
+            margin: 20px 0;
+            position: relative;
+        }
+
+        .chart-bar {
+            position: absolute;
+            bottom: 20px;
+            background: linear-gradient(to top, #4caf50, #8bc34a);
+            border-radius: 5px 5px 0 0;
+            animation: growUp 2s ease-out;
+        }
+
+        @keyframes glow {
+            from { text-shadow: 0 0 20px rgba(255, 255, 255, 0.5); }
+            to { text-shadow: 0 0 30px rgba(255, 255, 255, 0.8), 0 0 40px rgba(255, 107, 107, 0.5); }
+        }
+
+        @keyframes slideUp {
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes growUp {
+            from { height: 0; }
+            to { height: var(--height); }
+        }
+
+        .cta-button {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            color: white;
+            padding: 20px 40px;
+            font-size: 1.3rem;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            margin: 20px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(255, 107, 107, 0.3);
+        }
+
+        .logo {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .market-data {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin: 30px 0;
+            max-width: 800px;
+        }
+
+        .market-item {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .highlight-text {
+            color: #ffd700;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 2.5rem; }
+            h2 { font-size: 2rem; }
+            .feature-grid { grid-template-columns: 1fr; }
+            .phone-mockup { width: 250px; height: 500px; }
+            .slide { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="presentation-container">
+        <!-- 幻灯片指示器 -->
+        <div class="slide-indicator">
+            <div class="indicator-dot active" onclick="goToSlide(0)"></div>
+            <div class="indicator-dot" onclick="goToSlide(1)"></div>
+            <div class="indicator-dot" onclick="goToSlide(2)"></div>
+            <div class="indicator-dot" onclick="goToSlide(3)"></div>
+            <div class="indicator-dot" onclick="goToSlide(4)"></div>
+            <div class="indicator-dot" onclick="goToSlide(5)"></div>
+            <div class="indicator-dot" onclick="goToSlide(6)"></div>
+            <div class="indicator-dot" onclick="goToSlide(7)"></div>
+            <div class="indicator-dot" onclick="goToSlide(8)"></div>
+        </div>
+
+        <!-- 第1页：产品介绍 -->
+        <div class="slide active">
+            <div class="logo">🧠📈</div>
+            <h1>StockGenius AI</h1>
+            <p class="subtitle">全球首款真正智能的AI股票投资助手</p>
+            <p class="subtitle">让每个人都能像华尔街精英一样投资</p>
+            <div class="market-data">
+                <div class="market-item">
+                    <h3>99.7%</h3>
+                    <p>预测准确率</p>
+                </div>
+                <div class="market-item">
+                    <h3>3秒</h3>
+                    <p>AI分析速度</p>
+                </div>
+                <div class="market-item">
+                    <h3>10000+</h3>
+                    <p>覆盖股票数</p>
+                </div>
+            </div>
+            <a href="#" class="cta-button">开始体验未来投资</a>
+        </div>
+
+        <!-- 第2页：核心功能 -->
+        <div class="slide">
+            <h2>🚀 革命性核心功能</h2>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🎯</div>
+                    <h3>AI神经网络预测</h3>
+                    <p>• 基于Transformer架构的深度学习模型<br>
+                    • 实时分析500+技术指标<br>
+                    • 多时间维度预测（3天-1年）<br>
+                    • 置信度可视化展示</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔮</div>
+                    <h3>量子级市场洞察</h3>
+                    <p>• 毫秒级市场异动捕捉<br>
+                    • 主力资金流向透视<br>
+                    • 情绪指数实时监控<br>
+                    • 黑天鹅事件预警</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">💎</div>
+                    <h3>智能投资决策</h3>
+                    <p>• 个性化风险评估<br>
+                    • 最佳买卖点推荐<br>
+                    • 止盈止损智能设置<br>
+                    • 仓位管理优化</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🌟</div>
+                    <h3>超级选股引擎</h3>
+                    <p>• 每日智能推荐Top10<br>
+                    • 热点题材挖掘<br>
+                    • 价值洼地发现<br>
+                    • 避雷股票预警</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 第3页：APP界面展示 -->
+        <div class="slide">
+            <h2>📱 极致用户体验</h2>
+            <div class="app-mockup">
+                <div class="phone-mockup">
+                    <div class="screen">
+                        <div class="screen-header">
+                            <span>📊 StockGenius</span>
+                            <span>🔔 💬 ⚙️</span>
+                        </div>
+                        <div class="stock-card">
+                            <div class="stock-symbol">AAPL 苹果</div>
+                            <div class="stock-price">$175.23 ↗ +2.45%</div>
+                            <div class="ai-prediction">
+                                🎯 AI预测：未来3天 +5.2%
+                                <br>置信度：96.8%
+                            </div>
+                        </div>
+                        <div class="stock-card">
+                            <div class="stock-symbol">TSLA 特斯拉</div>
+                            <div class="stock-price">$198.67 ↗ +1.23%</div>
+                            <div class="ai-prediction">
+                                ⚡ 强力买入信号
+                                <br>目标价：$220
+                            </div>
+                        </div>
+                        <div class="stock-card">
+                            <div class="stock-symbol">NVDA 英伟达</div>
+                            <div class="stock-price">$421.33 ↘ -0.87%</div>
+                            <div class="ai-prediction">
+                                💡 回调买入机会
+                                <br>支撑位：$415
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <h3>🎨 设计亮点</h3>
+                    <ul style="text-align: left; font-size: 1.1rem; line-height: 1.8;">
+                        <li>• <span class="highlight-text">沉浸式深色主题</span>，护眼专业</li>
+                        <li>• <span class="highlight-text">手势交互</span>，滑动切换股票</li>
+                        <li>• <span class="highlight-text">实时推送</span>，重要信号不错过</li>
+                        <li>• <span class="highlight-text">3D图表</span>，数据立体呈现</li>
+                        <li>• <span class="highlight-text">语音助手</span>，说话即可查股</li>
+                        <li>• <span class="highlight-text">AR增强</span>，扫描K线图获取分析</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- 第4页：独特功能 -->
+        <div class="slide">
+            <h2>💡 独家黑科技功能</h2>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🧠</div>
+                    <h3>AI投资顾问</h3>
+                    <p>• 24/7个人AI投资顾问<br>
+                    • 自然语言对话分析<br>
+                    • 个性化投资建议<br>
+                    • 心理状态分析优化</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🎮</div>
+                    <h3>模拟交易游戏</h3>
+                    <p>• 虚拟资金实战演练<br>
+                    • 投资技能等级系统<br>
+                    • 成就徽章收集<br>
+                    • 好友PK排行榜</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔊</div>
+                    <h3>社交投资网络</h3>
+                    <p>• 高手策略跟投<br>
+                    • 投资心得分享<br>
+                    • 实时讨论社区<br>
+                    • 专家直播互动</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3>量化策略回测</h3>
+                    <p>• 历史数据深度回测<br>
+                    • 策略收益可视化<br>
+                    • 风险指标全面分析<br>
+                    • 一键策略优化</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 第5页：技术架构 -->
+        <div class="slide">
+            <h2>⚡ 顶级技术架构</h2>
+            <div class="tech-stack">
+                <div class="tech-item">🤖 GPT-4 Turbo</div>
+                <div class="tech-item">🧮 TensorFlow</div>
+                <div class="tech-item">⚡ Redis集群</div>
+                <div class="tech-item">🔄 Kafka消息队列</div>
+                <div class="tech-item">☁️ AWS云服务</div>
+                <div class="tech-item">📊 ClickHouse</div>
+                <div class="tech-item">🔐 区块链加密</div>
+                <div class="tech-item">📱 React Native</div>
+            </div>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h3>🚀 性能优势</h3>
+                    <p>• 毫秒级数据响应<br>
+                    • 99.99%系统可用性<br>
+                    • 智能缓存加速<br>
+                    • 弹性扩容架构</p>
+                </div>
+                <div class="feature-card">
+                    <h3>🛡️ 安全保障</h3>
+                    <p>• 银行级数据加密<br>
+                    • 多重身份验证<br>
+                    • 异常行为检测<br>
+                    • 隐私保护合规</p>
+                </div>
+                <div class="feature-card">
+                    <h3>🌐 全球部署</h3>
+                    <p>• 多地域CDN加速<br>
+                    • 智能负载均衡<br>
+                    • 实时数据同步<br>
+                    • 容灾备份机制</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 第6页：商业模式 -->
+        <div class="slide">
+            <h2>💰 盈利模式与市场潜力</h2>
+            <div class="revenue-chart">
+                <h3 style="text-align: center; margin-bottom: 20px;">预期收入增长曲线</h3>
+                <div class="chart-bar" style="left: 50px; width: 60px; --height: 60px; background: linear-gradient(to top, #4caf50, #8bc34a);"></div>
+                <div class="chart-bar" style="left: 130px; width: 60px; --height: 120px; background: linear-gradient(to top, #2196f3, #03a9f4);"></div>
+                <div class="chart-bar" style="left: 210px; width: 60px; --height: 200px; background: linear-gradient(to top, #ff9800, #ffc107);"></div>
+                <div class="chart-bar" style="left: 290px; width: 60px; --height: 260px; background: linear-gradient(to top, #e91e63, #f44336);"></div>
+                <div style="position: absolute; bottom: 0; left: 0; right: 0; display: flex; justify-content: space-around; padding: 0 50px;">
+                    <span>Q1</span><span>Q2</span><span>Q3</span><span>Q4</span>
+                </div>
+            </div>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h3>💎 订阅服务</h3>
+                    <p>• 基础版：¥99/月<br>
+                    • 专业版：¥299/月<br>
+                    • 机构版：¥999/月<br>
+                    • 预计月活500万用户</p>
+                </div>
+                <div class="feature-card">
+                    <h3>🎯 增值服务</h3>
+                    <p>• AI策略定制：¥1999起<br>
+                    • 1对1投资顾问：¥999/次<br>
+                    • 高级数据API：¥10000/月<br>
+                    • 企业解决方案</p>
+                </div>
+                <div class="feature-card">
+                    <h3>🤝 合作分成</h3>
+                    <p>• 券商开户分成<br>
+                    • 基金产品推广<br>
+                    • 金融产品导流<br>
+                    • 广告收入分成</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 第7页：市场优势 -->
+        <div class="slide">
+            <h2>🏆 竞争优势分析</h2>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h3>🥇 技术领先</h3>
+                    <p>• 独有的多模态AI模型<br>
+                    • 实时大数据处理能力<br>
+                    • 自研量化交易引擎<br>
+                    • 业界最高预测准确率</p>
+                </div>
+                <div class="feature-card">
+                    <h3>👥 用户体验</h3>
+                    <p>• 零学习成本上手<br>
+                    • 游戏化交互设计<br>
+                    • 个性化服务定制<br>
+                    • 社交化投资生态</p>
+                </div>
+                <div class="feature-card">
+                    <h3>💡 创新功能</h3>
+                    <p>• 全球首创AR选股<br>
+                    • 语音智能交互<br>
+                    • 情绪化投资分析<br>
+                    • 跨市场套利发现</p>
+                </div>
+                <div class="feature-card">
+                    <h3>🌟 品牌价值</h3>
+                    <p>• 顶级投资机构背书<br>
+                    • 知名财经媒体报道<br>
+                    • 行业专家团队<br>
+                    • 用户口碑传播</p>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 40px;">
+                <h3 class="highlight-text">🎯 目标：3年内成为全球最大的AI投资平台</h3>
+            </div>
+        </div>
+
+        <!-- 第8页：团队与融资 -->
+
+
+        <!-- 第9页：行动号召 -->
+        <div class="slide">
+            <div class="logo">🚀</div>
+            <h1>准备好改变投资世界了吗？</h1>
+            <p class="subtitle">StockGenius AI 不仅是一款APP</p>
+            <p class="subtitle">更是通往财富自由的智能桥梁</p>
+            
+            <div class="market-data">
+                <div class="market-item">
+                    <h3>💰</h3>
+                    <p>预期年化收益</p>
+                    <div class="highlight-text">35%+</div>
+                </div>
+                <div class="market-item">
+                    <h3>🎯</h3>
+                    <p>风险控制能力</p>
+                    <div class="highlight-text">98%</div>
+                </div>
+                <div class="market-item">
+                    <h3>⚡</h3>
+                    <p>交易胜率</p>
+                    <div class="highlight-text">87%</div>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;">
+                <a href="#" class="cta-button">💼 成为投资伙伴</a>
+                <a href="#" class="cta-button">📱 预约内测</a>
+                <a href="#" class="cta-button">🤝 商务合作</a>
+            </div>
+            
+            <p style="margin-top: 40px; font-size: 1.2rem; opacity: 0.8;">
+                联系我们：[mark]<br>
+                微信：[shinning]
+            </p>
+        </div>
+    </div>
+
+    <!-- 导航按钮 -->
+    <div class="navigation">
+        <div class="nav-btn" onclick="previousSlide()">‹</div>
+        <div class="nav-btn" onclick="nextSlide()">›</div>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const indicators = document.querySelectorAll('.indicator-dot');
+        const totalSlides = slides.length;
+
+        function showSlide(index) {
+            // 隐藏所有幻灯片
+            slides.forEach((slide, i) => {
+                slide.classList.remove('active', 'prev');
+                if (i < index) {
+                    slide.classList.add('prev');
+                } else if (i === index) {
+                    slide.classList.add('active');
+                }
+            });
+
+            // 更新指示器
+            indicators.forEach((indicator, i) => {
+                indicator.classList.toggle('active', i === index);
+            });
+
+            currentSlide = index;
+        }
+
+        function nextSlide() {
+            if (currentSlide < totalSlides - 1) {
+                showSlide(currentSlide + 1);
+            }
+        }
+
+        function previousSlide() {
+            if (currentSlide > 0) {
+                showSlide(currentSlide - 1);
+            }
+        }
+
+        function goToSlide(index) {
+            showSlide(index);
+        }
+
+        // 键盘导航
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                e.preventDefault();
+                nextSlide();
+            } else if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                previousSlide();
+            }
+        });
+
+        // 触摸手势支持
+        let startX = 0;
+        let endX = 0;
+
+        document.addEventListener('touchstart', (e) => {
+            startX = e.touches[0].clientX;
+        });
+
+        document.addEventListener('touchend', (e) => {
+            endX = e.changedTouches[0].clientX;
+            handleSwipe();
+        });
+
+        function handleSwipe() {
+            const swipeThreshold = 50;
+            const diff = startX - endX;
+
+            if (Math.abs(diff) > swipeThreshold) {
+                if (diff > 0) {
+                    nextSlide(); // 向左滑动，下一页
+                } else {
+                    previousSlide(); // 向右滑动，上一页
+                }
+            }
+        }
+
+        // 自动播放功能（可选）
+        function startAutoPlay() {
+            setInterval(() => {
+                if (currentSlide < totalSlides - 1) {
+                    nextSlide();
+                } else {
+                    showSlide(0); // 回到第一页
+                }
+            }, 10000); // 10秒自动切换
+        }
+
+        // 取消注释下面的行来启用自动播放
+        // startAutoPlay();
+
+        // 初始化
+        showSlide(0);
+    </script>
+</body>
+</html>
