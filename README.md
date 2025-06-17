@@ -1,1 +1,0 @@
-# stockgenius-ai
